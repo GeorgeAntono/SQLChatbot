@@ -107,5 +107,7 @@ SNOWFLAKE_HOST=****
 SELECTED_DB=snowflake # snowflake or mysql
 ```
 
-Sakila is a test database used by SQL. You can create a custom table like PostNL and reference it with DB_CONNECTION_STRING=mysql+mysqldb://<user>:<password>@localhost/PostNL
-
+Sakila is a test database used by SQL. You can create a custom table like PostNL and reference it with
+``` 
+DB_CONNECTION_STRING=mysql+mysqldb://<user>:<password>@localhost/PostNL
+```

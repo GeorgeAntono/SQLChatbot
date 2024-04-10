@@ -6,8 +6,8 @@ It allows you to query in a technical, but also in a business like way.
 So you can ask questions like e.g:
 
 - Can you please show me all the indices used in this database?
-- Which are the 5 most popular films?
-- Which tables are referencing the actor table?
+- Which are the 5 most popular X ?
+- Which tables are referencing the X table?
 
 ## Installation
 
@@ -88,6 +88,7 @@ alter table address drop column location;
 
 You will also need a `.env` file in the directory you are running this application as well as an installed MySQL database server with the Sakila database installed.
 
+
 The .env file should have the following variables:
 
 ```
@@ -105,3 +106,6 @@ SNOWFLAKE_HOST=****
 
 SELECTED_DB=snowflake # snowflake or mysql
 ```
+
+Sakila is a test database used by SQL. You can create a custom table like PostNL and reference it with DB_CONNECTION_STRING=mysql+mysqldb://<user>:<password>@localhost/PostNL
+

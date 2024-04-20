@@ -7,7 +7,6 @@ from sql_analyzer.log_init import logger
 
 load_dotenv()
 
-
 SNOWFLAKE = "snowflake"
 MYSQL = "mysql"
 SELECTED_DBS = [SNOWFLAKE, MYSQL]
@@ -36,9 +35,16 @@ class Config:
         )
 
 
+class Csv:
+    conversation_data = []
+    callback_list = []
+
+
 cfg = Config()
+csv_data = Csv()
 
 if __name__ == "__main__":
     logger.info("LLM %s", cfg.llm)
     logger.info("db_uri %s", cfg.db_uri)
     logger.info("selected_db %s", cfg.selected_db)
+    logger.info("conversation_data %s", csv_data.conversation_data)

@@ -17,6 +17,7 @@ from sql_analyzer.config import cfg
 from sql_analyzer.log_init import logger
 from sql_analyzer.sql.sql_tool import ExtendedSQLDatabaseToolkit
 from sql_analyzer.sql_db_factory import sql_db_factory
+from sql_analyzer.config import csv_data
 
 FINAL_ANSWER_ACTION = "Final Answer:"
 
@@ -31,6 +32,7 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
             r"Action\s*\d*\s*:[\s]*(.*?)[\s]*Action\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
         )
         action_match = re.search(regex, text, re.DOTALL)
+
         if action_match:
             if includes_answer:
                 raise OutputParserException(
@@ -44,14 +46,22 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
             if tool_input.startswith("SELECT ") is False:
                 tool_input = tool_input.strip('"')
 
+            # Store the langchain's response in the callback list
+            csv_data.callback_list.append(tool_input)
+
             return AgentAction(action, tool_input, text)
 
         elif includes_answer:
+            # Store the user's message and the chatbot's response in the conversation_data list
+            csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
+
             return AgentFinish(
                 {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
             )
 
         if not re.search(r"Action\s*\d*\s*:[\s]*(.*?)", text, re.DOTALL):
+            # Store the user's message and the chatbot's response in the conversation_data list
+            csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
                 observation="Invalid Format: Missing 'Action:' after 'Thought:'",
@@ -61,6 +71,8 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
         elif not re.search(
             r"[\s]*Action\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)", text, re.DOTALL
         ):
+            # Store the user's message and the chatbot's response in the conversation_data list
+            csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
                 observation="Invalid Format:"
@@ -69,6 +81,8 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
                 send_to_llm=True,
             )
         else:
+            # Store the user's message and the chatbot's response in the conversation_data list
+            csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
             raise OutputParserException(f"Could not parse LLM output: `{text}`")
 
     def includes_final_answer(self, text):
@@ -108,6 +122,7 @@ def initialize_agent(toolkit: SQLDatabaseToolkit) -> AgentExecutor:
         verbose=True,
         agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         memory=setup_memory(),
+        return_intermediate_steps=True,
     )
     return agent_executor
 

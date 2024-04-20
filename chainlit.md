@@ -12,3 +12,5 @@ The SQL Analyst is connected to a Snowflake TPCDS_SF10TCL demo database. You can
 - How many records are there in the PostNL_account_delivery_facts_anonymized table?
 - Which month_id has the highest amount of parcels and what is that amount?
 - What is the highest amount of parcels_home_1st?
+- Give me top 50 parcels with their month_id
+

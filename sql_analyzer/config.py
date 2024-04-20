@@ -1,9 +1,27 @@
 import os
 
+from gptcache.embedding import langchain
 from langchain.chat_models import ChatOpenAI
 
 from dotenv import load_dotenv
 from sql_analyzer.log_init import logger
+
+from gptcache import Cache
+from gptcache.adapter.api import init_similar_cache
+from langchain.cache import GPTCache
+import hashlib
+
+
+def get_hashed_name(name):
+    return hashlib.sha256(name.encode()).hexdigest()
+
+
+def init_gptcache(cache_obj: Cache, llm: str):
+    hashed_llm = get_hashed_name(llm)
+    init_similar_cache(cache_obj=cache_obj, data_dir=f"similar_cache_{hashed_llm}")
+
+
+
 
 load_dotenv()
 
@@ -41,6 +59,9 @@ class Csv:
 
 
 cfg = Config()
+
+langchain.llm_cache = GPTCache(init_gptcache)
+
 csv_data = Csv()
 
 if __name__ == "__main__":

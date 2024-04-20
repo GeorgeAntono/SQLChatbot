@@ -44,6 +44,7 @@ pip install langchain
 pip install snowflake-sqlalchemy
 # pip install SQLAlchemy-Utils
 pip install openai
+pip install gptcache
 pip install chainlit
 # pip install black
 

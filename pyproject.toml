@@ -16,6 +16,7 @@ mysqlclient = "^2.2.0"
 chainlit = "^0.6.1"
 GeoAlchemy2 = "^0.14.1"
 snowflake-sqlalchemy = "1.4.7"
+gptcache = "^0.1.43"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

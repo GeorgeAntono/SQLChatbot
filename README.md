@@ -21,9 +21,11 @@ pip install openai
 pip install mysqlclient
 pip install chainlit
 pip install geoalchemy2
+pip install gptcache
 # Support MySQL geometry types
 pip install acryl-datahub
 pip install black
+
 
 
 pip install poetry

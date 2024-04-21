@@ -2,6 +2,7 @@
 name = "sql-chain-playground"
 version = "0.1.0"
 description = "SQL Chain Playground project used to test the capabilities of the LangChain's SQL chain"
+authors = ["George Antonopoulos g.antonopoulos@tilburguniversity.edu"]
 readme = "README.md"
 packages = [{include = "sql_analyzer"}]
 
@@ -12,7 +13,7 @@ prompt-toolkit = "^3.0.39"
 openai = "^0.27.8"
 python-dotenv = "^1.0.0"
 mysqlclient = "^2.2.0"
-chainlit = "^0.6.1"
+chainlit = "1.0.504"
 GeoAlchemy2 = "^0.14.1"
 snowflake-sqlalchemy = "1.4.7"
 gptcache = "^0.1.43"

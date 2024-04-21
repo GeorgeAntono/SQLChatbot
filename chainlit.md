@@ -2,7 +2,7 @@
 
 Hi there, Analyst! 👋 
 
-The SQL Analyst is connected to a Snowflake TPCDS_SF10TCL demo database. You can use this chat tool to analyze it.
+The SQL Analyst is connected to a MySQL PostNL database. You can use this chat tool to analyze it.
 
 
 

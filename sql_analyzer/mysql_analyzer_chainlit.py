@@ -1,5 +1,6 @@
 import chainlit as cl
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine,text
 from sql_analyzer.config import cfg
 
@@ -51,35 +52,53 @@ async def main(message):
     await cl.Message(content="Save your answers in a csv:", actions=actions).send()
 
 
+
 @cl.action_callback("Save button")
 async def on_action(action: cl.Action):
     await cl.Message(content=f"Executed {action.name}").send()
     print("The user clicked on the action button!")
 
-    # Save the data with SQL_QUERY to a csv file
+    try:
+        # Create the database engine using the URI from Config
+        db_uri = cfg.db_uri
+        engine = create_engine(db_uri)
+        sql_query = csv_data.callback_list[-1]
 
-    # Create the database engine using the URI from Config
-    db_uri = cfg.db_uri
-    engine = create_engine(db_uri)
-    sql_query = csv_data.callback_list[-1]
-    # Run the SQL query
-    sql = text(sql_query)
-    results = engine.execute(sql)
+        # Run the SQL query
+        sql = text(sql_query)
+        results = engine.execute(sql)
 
-    # Convert the results to a pandas DataFrame and save to CSV
-    df_sql = pd.DataFrame(results, columns=results.keys())  # Provide column names
-    df_sql.to_csv(sql_path, index=False)
+        # Check if the results contain any rows
+        if not results.rowcount:
+            raise Exception("The SQL query returned an empty result set.")
 
+        # Convert the results to a pandas DataFrame and save to CSV
+        df_sql = pd.DataFrame(results, columns=results.keys())  # Provide column names
+        df_sql.to_csv(sql_path, index=False)
 
-    # Convert the conversation data to a pandas DataFrame (This is for testing only)
-    df = pd.DataFrame(conversation_list)
-    df.to_csv(file_path, index=False)
+    except SQLAlchemyError as e:
+        # Handle the SQLAlchemy error
+        error_message = f"An error occurred while executing the SQL query: {str(e)}"
+        await cl.Message(content=error_message).send()
+        # Log the error or perform any other necessary actions
 
-    # Convert the callback list to a pandas DataFrame
-    #(Callback list is the list of SQL queries that the user has asked for)
-    callback_list = csv_data.callback_list
-    df_callback = pd.DataFrame(callback_list)
-    df_callback.to_csv(callback_path, index=False)
+    except Exception as e:
+        # Handle the custom exception for an empty result set
+        error_message = f"The SQL query returned an empty result set: {str(e)}"
+        await cl.Message(content=error_message).send()
+        # Log the error or perform any other necessary actions
 
+    else:
+        # If no exception occurred, proceed with other operations
 
-    return "Thank you for clicking on the action button!"
+        # Convert the conversation data to a pandas DataFrame (This is for testing only)
+        df = pd.DataFrame(conversation_list)
+        df.to_csv(file_path, index=False)
+
+        # Convert the callback list to a pandas DataFrame
+        #(Callback list is the list of SQL queries that the user has asked for)
+        callback_list = csv_data.callback_list
+        df_callback = pd.DataFrame(callback_list)
+        df_callback.to_csv(callback_path, index=False)
+
+        return "Thank you for clicking on the action button!"

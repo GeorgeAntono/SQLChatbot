@@ -49,6 +49,8 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
             # Store the langchain's response in the callback list
             csv_data.callback_list.append(tool_input)
             csv_data.conversation_data.append({"Action": action, "Text": text})
+
+
             return AgentAction(action, tool_input, text)
 
         elif includes_answer:
@@ -62,6 +64,8 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
         if not re.search(r"Action\s*\d*\s*:[\s]*(.*?)", text, re.DOTALL):
             # Store the user's message and the chatbot's response in the conversation_data list
             csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
+
+            # Raise an exception if the output does not contain the expected format
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
                 observation="Invalid Format: Missing 'Action:' after 'Thought:'",
@@ -73,6 +77,8 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
         ):
             # Store the user's message and the chatbot's response in the conversation_data list
             csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
+
+            # Raise an expection if the output does not contain the expected format
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
                 observation="Invalid Format:"
@@ -83,6 +89,8 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
         else:
             # Store the user's message and the chatbot's response in the conversation_data list
             csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
+
+            # Raise an exception if the output does not contain the expected format
             raise OutputParserException(f"Could not parse LLM output: `{text}`")
 
     def includes_final_answer(self, text):

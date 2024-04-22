@@ -48,7 +48,7 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
 
             # Store the langchain's response in the callback list
             csv_data.callback_list.append(tool_input)
-
+            csv_data.conversation_data.append({"Action": action, "Text": text})
             return AgentAction(action, tool_input, text)
 
         elif includes_answer:
@@ -56,7 +56,7 @@ class ExtendedMRKLOutputParser(AgentOutputParser):
             csv_data.conversation_data.append({"Answer": text.split(FINAL_ANSWER_ACTION)[-1].strip()})
 
             return AgentFinish(
-                {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
+                {"output": text}, text
             )
 
         if not re.search(r"Action\s*\d*\s*:[\s]*(.*?)", text, re.DOTALL):

@@ -1,2 +1,10 @@
-Answer
-0
+Action,Text,Answer
+sql_db_list_tables,"Action: sql_db_list_tables
+Action Input: """"",
+sql_db_schema,"I should query the schema of the ""postnl_account_delivery_facts_anonymized"" table to see if it contains the information I need.
+Action: sql_db_schema
+Action Input: ""postnl_account_delivery_facts_anonymized""",
+sql_db_query,"I can use the ""postnl_account_delivery_facts_anonymized"" table to get the top 50 parcels with their month_id. I will write a query to select the month_id and number_of_parcels columns from the table and limit the results to 50.
+Action: sql_db_query
+Action Input: ""SELECT month_id, number_of_parcels FROM postnl_account_delivery_facts_anonymized LIMIT 50""",
+,,The top 50 parcels with their month_id are as listed above.

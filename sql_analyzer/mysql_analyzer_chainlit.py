@@ -32,16 +32,48 @@ def start():
 async def main(message):
     # Sending an action button within a chatbot message
 
-
     agent_executor: AgentExecutor = cl.user_session.get("agent")
-    cb = cl.LangchainCallbackHandler(stream_final_answer=True)
+    #cb = cl.AsyncLangchainCallbackHandler(stream_final_answer=True)
 
     # Add the post-prompt to the user's message
     post_prompt = " Don't justify your answers. Don't give information not mentioned in the CONTEXT INFORMATION."
-    message_with_post_prompt = message + post_prompt
+    message_with_post_prompt = message.content + post_prompt
 
-    
-    resp = await cl.make_async(agent_executor.run)(message_with_post_prompt, callbacks=[cb])
+
+
+    '''
+    Runs agent executor with make_async function of chainlit  and 
+    takes as input the message as a String 
+       
+    '''
+
+    chunks = []
+
+    resp = await cl.make_async(agent_executor.run)(message_with_post_prompt)
+    '''async for chunk in agent_executor.astream({"input": resp}):
+        chunks.append(chunk)
+        print("------")
+        # Agent Action
+        if "actions" in chunk:
+            for action in chunk["actions"]:
+                print(f"Calling Tool: `{action.tool}` with input `{action.tool_input}`")
+        # Observation
+        elif "steps" in chunk:
+            for step in chunk["steps"]:
+                print(f"Tool Result: `{step.observation}`")
+        # Final result
+        elif "output" in chunk:
+            print(f'Final Output: {chunk["output"]}')
+        else:
+            raise ValueError()
+        print("---")'''
+
+
+    #final_answers = agent_executor(inputs=message_with_post_prompt,callbacks=[cb])
+    #final_answers_list = final_answers
+    #print(final_answers_list)
+    #await final_answers_list['output'].send()
+
     final_message = cl.Message(content=resp)
     await final_message.send()
 
@@ -50,6 +82,8 @@ async def main(message):
     ]
 
     await cl.Message(content="Save your answers in a csv:", actions=actions).send()
+
+
 
 
 
@@ -101,4 +135,4 @@ async def on_action(action: cl.Action):
         df_callback = pd.DataFrame(callback_list)
         df_callback.to_csv(callback_path, index=False)
 
-        return "Thank you for clicking on the action button!"
+        return "Successful save!"

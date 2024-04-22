@@ -2,7 +2,7 @@
 name = "sql-chain-playground"
 version = "0.1.0"
 description = "SQL Chain Playground project used to test the capabilities of the LangChain's SQL chain"
-authors = ["George Antonopoulos g.antonopoulos@tilburguniversity.edu"]
+authors = ["George Antonopoulos <g.antonopoulos@tilburguniversity.edu>"]
 readme = "README.md"
 packages = [{include = "sql_analyzer"}]
 

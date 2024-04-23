@@ -89,12 +89,10 @@ async def on_action(action: cl.Action):
         # Create the database engine using the URI from Config
         db_uri = cfg.db_uri
         engine = create_engine(db_uri)
-        await cl.Message(content=f"Action Value: {action.value}").send()
         # Get the specific button call from conversation_dict_saver
         conversation_dict_saver = cl.user_session.get("conversation_dict_saver")
         counter = int(action.value)
         sql_query = conversation_dict_saver[counter]
-        await cl.Message(content=f"Conversation dict saver:{conversation_dict_saver}").send()
         # Run the SQL query
         sql = text(sql_query)
         results = engine.execute(sql)

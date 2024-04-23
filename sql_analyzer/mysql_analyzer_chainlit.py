@@ -134,3 +134,14 @@ async def on_action(action: cl.Action):
         df_callback.to_csv(callback_path, index=False)
 
     return "Successful save!"
+
+@cl.on_chat_end
+def end():
+    if (os.path.exists(file_path) and os.path.isfile(file_path)):
+        os.remove(file_path)
+
+    if (os.path.exists(callback_path) and os.path.isfile(callback_path)):
+        os.remove(callback_path)
+
+    if (os.path.exists(sql_path) and os.path.isfile(sql_path)):
+        os.remove(sql_path)

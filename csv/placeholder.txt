@@ -1,0 +1,3 @@
+This is a placeholder file for the csv directory.
+It is required for the csv directory to be created in the repository.
+The csv directory is used to store the csv files that are created by the SQL chatbot.

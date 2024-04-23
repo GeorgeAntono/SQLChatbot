@@ -17,7 +17,7 @@ file_path = os.path.join(directory, "conversation_data.csv")
 conversation_list = csv_data.conversation_data
 callback_path =  os.path.join(directory, "callback_list.csv")
 sql_path = os.path.join(directory, "sql_data.csv")
-
+#conversation_dict_saver = {}
 
 
 
@@ -25,7 +25,8 @@ sql_path = os.path.join(directory, "sql_data.csv")
 def start():
     agent_executor = agent_factory()
     cl.user_session.set("agent", agent_executor)
-
+    cl.user_session.set("counter", 0)
+    cl.user_session.set("conversation_dict_saver", {})
 
 
 @cl.on_message
@@ -47,42 +48,34 @@ async def main(message):
        
     '''
 
-    chunks = []
+
 
     resp = await cl.make_async(agent_executor.run)(message_with_post_prompt)
-    '''async for chunk in agent_executor.astream({"input": resp}):
-        chunks.append(chunk)
-        print("------")
-        # Agent Action
-        if "actions" in chunk:
-            for action in chunk["actions"]:
-                print(f"Calling Tool: `{action.tool}` with input `{action.tool_input}`")
-        # Observation
-        elif "steps" in chunk:
-            for step in chunk["steps"]:
-                print(f"Tool Result: `{step.observation}`")
-        # Final result
-        elif "output" in chunk:
-            print(f'Final Output: {chunk["output"]}')
-        else:
-            raise ValueError()
-        print("---")'''
-
-
-    #final_answers = agent_executor(inputs=message_with_post_prompt,callbacks=[cb])
-    #final_answers_list = final_answers
-    #print(final_answers_list)
-    #await final_answers_list['output'].send()
-
     final_message = cl.Message(content=resp)
     await final_message.send()
 
+    # Save the last query in sql_query
+    sql_query = csv_data.callback_list[-1]
+
+    #Remember every different message with a counter for one session
+    counter = cl.user_session.get("counter")
+    conversation_dict_saver = cl.user_session.get("conversation_dict_saver")
+
+    counter += 1
+    # Save the button call and the results in a dictionary
+    conversation_dict_saver[counter] = sql_query
+
+    cl.user_session.set("conversation_dict_saver", conversation_dict_saver)
+    cl.user_session.set("counter", counter)
+
+
+
+
     actions = [
-        cl.Action(name="Save button", value="save_csv", description="Click me to save!")
+        cl.Action(name="Save button", value=cl.user_session.get("counter"), description="Click me to save!")
     ]
 
     await cl.Message(content="Save your answers in a csv:", actions=actions).send()
-
 
 
 
@@ -91,39 +84,46 @@ async def main(message):
 async def on_action(action: cl.Action):
     await cl.Message(content=f"Executed {action.name}").send()
     print("The user clicked on the action button!")
-
     try:
+
         # Create the database engine using the URI from Config
         db_uri = cfg.db_uri
         engine = create_engine(db_uri)
-        sql_query = csv_data.callback_list[-1]
-
+        await cl.Message(content=f"Action Value: {action.value}").send()
+        # Get the specific button call from conversation_dict_saver
+        conversation_dict_saver = cl.user_session.get("conversation_dict_saver")
+        counter = int(action.value)
+        sql_query = conversation_dict_saver[counter]
+        await cl.Message(content=f"Conversation dict saver:{conversation_dict_saver}").send()
         # Run the SQL query
         sql = text(sql_query)
         results = engine.execute(sql)
-
-        # Check if the results contain any rows
-        if not results.rowcount:
-            raise Exception("The SQL query returned an empty result set.")
 
         # Convert the results to a pandas DataFrame and save to CSV
         df_sql = pd.DataFrame(results, columns=results.keys())  # Provide column names
         df_sql.to_csv(sql_path, index=False)
 
+
+        # Check if the results contain any rows
+        if not results.rowcount:
+            raise Exception(f"The SQL query returned an empty result set. ")
+
     except SQLAlchemyError as e:
         # Handle the SQLAlchemy error
         error_message = f"An error occurred while executing the SQL query: {str(e)}"
-        await cl.Message(content=error_message).send()
         # Log the error or perform any other necessary actions
+        await cl.Message(content=error_message).send()
+
 
     except Exception as e:
         # Handle the custom exception for an empty result set
         error_message = f"The SQL query returned an empty result set: {str(e)}"
-        await cl.Message(content=error_message).send()
         # Log the error or perform any other necessary actions
+        await cl.Message(content=error_message).send()
 
+
+    # If no exception occurred, proceed with other operations
     else:
-        # If no exception occurred, proceed with other operations
 
         # Convert the conversation data to a pandas DataFrame (This is for testing only)
         df = pd.DataFrame(conversation_list)
@@ -135,4 +135,4 @@ async def on_action(action: cl.Action):
         df_callback = pd.DataFrame(callback_list)
         df_callback.to_csv(callback_path, index=False)
 
-        return "Successful save!"
+    return "Successful save!"

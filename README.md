@@ -114,3 +114,27 @@ Sakila is a test database used by SQL. You can create a custom table like PostNL
 ``` 
 DB_CONNECTION_STRING=mysql+mysqldb://<user>:<password>@localhost/PostNL
 ```
+
+To add Data Persistency, we need authentication and the Literal API key. 
+
+Here you will find how to create the literal API key: https://docs.chainlit.io/data-persistence/overview
+
+Here you will find how to create the github credentials: https://docs.chainlit.io/authentication/oauth
+
+
+To get the CHAINLIT_AUTH_SECRET you need to run the following command on the terminal.
+``` 
+chainlit create-secret
+```
+
+This how the .env should look like eventually. 
+
+```
+DB_CONNECTION_STRING=mysql+mysqldb://<user>:<password>@localhost/PostNL
+OPENAI_API_KEY=<openapi-key>
+SELECTED_DB=mysql
+CHAINLIT_AUTH_SECRET="YOUR_CHAINLIT_SECRET_KEY"
+OAUTH_GITHUB_CLIENT_ID=your_github_client_id
+OAUTH_GITHUB_CLIENT_SECRET=your_github_secret_token
+LITERAL_API_KEY=your_literal_API_key
+```

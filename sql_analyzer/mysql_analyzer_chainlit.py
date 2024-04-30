@@ -5,9 +5,13 @@ from sqlalchemy import create_engine,text
 from sql_analyzer.config import cfg
 
 
+
 import pandas as pd
 import os
 from sql_analyzer.config import csv_data
+
+from typing import Dict, Optional
+
 
 from sql_analyzer.agent_factory import agent_factory
 from langchain.agents import AgentExecutor
@@ -15,11 +19,18 @@ from langchain.agents import AgentExecutor
 directory = "../PostNLconsultancy/csv"
 file_path = os.path.join(directory, "conversation_data.csv")
 conversation_list = csv_data.conversation_data
-callback_path =  os.path.join(directory, "callback_list.csv")
+callback_path = os.path.join(directory, "callback_list.csv")
 sql_path = os.path.join(directory, "sql_data.csv")
-#conversation_dict_saver = {}
 
 
+@cl.oauth_callback
+def oauth_callback(
+  provider_id: str,
+  token: str,
+  raw_user_data: Dict[str, str],
+  default_user: cl.User,
+) -> Optional[cl.User]:
+  return default_user
 
 @cl.on_chat_start
 def start():
@@ -145,3 +156,5 @@ def end():
 
     if (os.path.exists(sql_path) and os.path.isfile(sql_path)):
         os.remove(sql_path)
+
+

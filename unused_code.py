@@ -37,3 +37,27 @@ async def fixed_step(resp):
     return resp
     
 '''
+#chunks = []
+'''async for chunk in agent_executor.astream({"input": resp}):
+        chunks.append(chunk)
+        print("------")
+        # Agent Action
+        if "actions" in chunk:
+            for action in chunk["actions"]:
+                print(f"Calling Tool: `{action.tool}` with input `{action.tool_input}`")
+        # Observation
+        elif "steps" in chunk:
+            for step in chunk["steps"]:
+                print(f"Tool Result: `{step.observation}`")
+        # Final result
+        elif "output" in chunk:
+            print(f'Final Output: {chunk["output"]}')
+        else:
+            raise ValueError()
+        print("---")'''
+
+
+#final_answers = agent_executor(inputs=message_with_post_prompt,callbacks=[cb])
+#final_answers_list = final_answers
+#print(final_answers_list)
+#await final_answers_list['output'].send()

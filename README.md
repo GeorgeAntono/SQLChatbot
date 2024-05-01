@@ -51,6 +51,10 @@ pip install gptcache
 pip install acryl-datahub
 pip install black
 
+
+pip install poetry
+poetry install
+
 ```
 
 

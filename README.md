@@ -11,10 +11,36 @@ So you can ask questions like e.g:
 
 ## Installation
 
+
+Do the installation preferably on PyCharm or any other terminal than conda. If you use conda here is the commands. 
 ```
 # conda remove -n langchain_sql --all
 conda create -n langchain_sql python=3.11
 conda activate langchain_sql
+pip install langchain
+pip install prompt_toolkit
+pip install openai
+pip install mysqlclient
+pip install chainlit
+pip install geoalchemy2
+pip install gptcache
+pip install pandas
+# Support MySQL geometry types
+pip install acryl-datahub
+pip install black
+
+
+
+pip install poetry
+poetry install
+
+```
+
+If you use Pycharm or VsCode or any other IDE or text editor, git clone this repository 
+and then run the following commands on the terminal of the cloned repository.
+
+
+```
 pip install langchain
 pip install prompt_toolkit
 pip install openai
@@ -27,11 +53,11 @@ pip install acryl-datahub
 pip install black
 
 
-
 pip install poetry
 poetry install
 
 ```
+
 
 ### Snowflake
 

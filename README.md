@@ -163,4 +163,7 @@ CHAINLIT_AUTH_SECRET="YOUR_CHAINLIT_SECRET_KEY"
 OAUTH_GITHUB_CLIENT_ID=your_github_client_id
 OAUTH_GITHUB_CLIENT_SECRET=your_github_secret_token
 LITERAL_API_KEY=your_literal_API_key
+EMAIL_RECEIVER=email_address_of_the_analyst
+EMAIL_SENDER_ADDRESS=email_address_to_send
+EMAIL_SENDER_PASSWORD=password_of_the_email_address_to_send
 ```

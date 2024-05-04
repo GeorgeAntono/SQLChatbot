@@ -1,5 +1,7 @@
 import chainlit as cl
 
+from chainlit.input_widget import Select, Switch, Slider
+
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine,text
 from sql_analyzer.config import cfg
@@ -15,6 +17,8 @@ from typing import Dict, Optional
 
 from sql_analyzer.agent_factory import agent_factory
 from langchain.agents import AgentExecutor
+
+from sql_analyzer.email import send_email
 
 directory = "../PostNLconsultancy/csv"
 file_path = os.path.join(directory, "conversation_data.csv")
@@ -33,12 +37,75 @@ def oauth_callback(
   return default_user
 
 @cl.on_chat_start
-def start():
+async def start():
     agent_executor = agent_factory()
     cl.user_session.set("agent", agent_executor)
     cl.user_session.set("counter", 0)
     cl.user_session.set("conversation_dict_saver", {})
 
+    # subject = "Chatbot Customer Request"
+    # attach_filename = "Conversation_List"
+    # # df = pd.DataFrame(conversation_list)
+    # d = {'col1': [1, 2], 'col2': [3, 4]}
+    # df = pd.DataFrame(data=d)
+    # send_email(subject, attach_filename, df)
+
+
+    # settings = await cl.ChatSettings(
+    #     [
+    #         Select(
+    #             id="Model",
+    #             label="OpenAI - Model",
+    #             values=["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"],
+    #             initial_index=0,
+    #         ),
+    #         Switch(id="Streaming", label="OpenAI - Stream Tokens", initial=True),
+    #         Slider(
+    #             id="Temperature",
+    #             label="OpenAI - Temperature",
+    #             initial=1,
+    #             min=0,
+    #             max=2,
+    #             step=0.1,
+    #         ),
+    #         Slider(
+    #             id="SAI_Steps",
+    #             label="Stability AI - Steps",
+    #             initial=30,
+    #             min=10,
+    #             max=150,
+    #             step=1,
+    #             description="Amount of inference steps performed on image generation.",
+    #         ),
+    #         Slider(
+    #             id="SAI_Cfg_Scale",
+    #             label="Stability AI - Cfg_Scale",
+    #             initial=7,
+    #             min=1,
+    #             max=35,
+    #             step=0.1,
+    #             description="Influences how strongly your generation is guided to match your prompt.",
+    #         ),
+    #         Slider(
+    #             id="SAI_Width",
+    #             label="Stability AI - Image Width",
+    #             initial=512,
+    #             min=256,
+    #             max=2048,
+    #             step=64,
+    #             tooltip="Measured in pixels",
+    #         ),
+    #         Slider(
+    #             id="SAI_Height",
+    #             label="Stability AI - Image Height",
+    #             initial=512,
+    #             min=256,
+    #             max=2048,
+    #             step=64,
+    #             tooltip="Measured in pixels",
+    #         ),
+    #     ]
+    # ).send()
 
 @cl.on_message
 async def main(message):
@@ -87,6 +154,31 @@ async def main(message):
     ]
 
     await cl.Message(content="Save your answers in a csv:", actions=actions).send()
+
+    res = await cl.AskActionMessage(
+        content="Pick an action!",
+        actions=[
+            cl.Action(name="send_email", value="send_email", label="📧 Email to CDA Team"),
+            cl.Action(name="cancel", value="cancel", label="❌ Exit"),
+        ],
+    ).send()
+
+    if res and res.get("value") == "send_email":
+        # await cl.Message(
+        #     content="Continue!",
+        # ).send()
+        # try:
+        subject = "Chatbot Customer Request"
+        attach_filename = "Conversation_List"
+        df = pd.DataFrame(conversation_list)
+        # d = {'col1': [1, 2], 'col2': [3, 4]}
+        # df = pd.DataFrame(data=d)
+        send_email(subject, attach_filename, df)
+        # except Exception as e:
+        #     # Handle the SQLAlchemy error
+        #     error_message = f"An error occurred while sending email: {str(e)}"
+        #     # Log the error or perform any other necessary actions
+        #     await cl.Message(content=error_message).send()
 
 
 
@@ -156,5 +248,9 @@ def end():
 
     if (os.path.exists(sql_path) and os.path.isfile(sql_path)):
         os.remove(sql_path)
+
+# @cl.on_settings_update
+# async def setup_agent(settings):
+#     print("on_settings_update", settings)
 
 

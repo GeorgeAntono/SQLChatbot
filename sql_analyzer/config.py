@@ -21,8 +21,6 @@ def init_gptcache(cache_obj: Cache, llm: str):
     init_similar_cache(cache_obj=cache_obj, data_dir=f"similar_cache_{hashed_llm}")
 
 
-
-
 load_dotenv()
 
 SNOWFLAKE = "snowflake"
@@ -53,6 +51,12 @@ class Config:
         )
 
 
+class Email:
+    receiver = os.getenv("EMAIL_RECEIVER")
+    sender_address = os.getenv("EMAIL_SENDER_ADDRESS")
+    sender_password = os.getenv("EMAIL_SENDER_PASSWORD")
+
+
 class Csv:
     conversation_data = []
     callback_list = []
@@ -63,6 +67,8 @@ cfg = Config()
 langchain.llm_cache = GPTCache(init_gptcache)
 
 csv_data = Csv()
+
+mail = Email()
 
 if __name__ == "__main__":
     logger.info("LLM %s", cfg.llm)

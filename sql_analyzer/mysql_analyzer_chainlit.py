@@ -43,70 +43,6 @@ async def start():
     cl.user_session.set("counter", 0)
     cl.user_session.set("conversation_dict_saver", {})
 
-    # subject = "Chatbot Customer Request"
-    # attach_filename = "Conversation_List"
-    # # df = pd.DataFrame(conversation_list)
-    # d = {'col1': [1, 2], 'col2': [3, 4]}
-    # df = pd.DataFrame(data=d)
-    # send_email(subject, attach_filename, df)
-
-
-    # settings = await cl.ChatSettings(
-    #     [
-    #         Select(
-    #             id="Model",
-    #             label="OpenAI - Model",
-    #             values=["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"],
-    #             initial_index=0,
-    #         ),
-    #         Switch(id="Streaming", label="OpenAI - Stream Tokens", initial=True),
-    #         Slider(
-    #             id="Temperature",
-    #             label="OpenAI - Temperature",
-    #             initial=1,
-    #             min=0,
-    #             max=2,
-    #             step=0.1,
-    #         ),
-    #         Slider(
-    #             id="SAI_Steps",
-    #             label="Stability AI - Steps",
-    #             initial=30,
-    #             min=10,
-    #             max=150,
-    #             step=1,
-    #             description="Amount of inference steps performed on image generation.",
-    #         ),
-    #         Slider(
-    #             id="SAI_Cfg_Scale",
-    #             label="Stability AI - Cfg_Scale",
-    #             initial=7,
-    #             min=1,
-    #             max=35,
-    #             step=0.1,
-    #             description="Influences how strongly your generation is guided to match your prompt.",
-    #         ),
-    #         Slider(
-    #             id="SAI_Width",
-    #             label="Stability AI - Image Width",
-    #             initial=512,
-    #             min=256,
-    #             max=2048,
-    #             step=64,
-    #             tooltip="Measured in pixels",
-    #         ),
-    #         Slider(
-    #             id="SAI_Height",
-    #             label="Stability AI - Image Height",
-    #             initial=512,
-    #             min=256,
-    #             max=2048,
-    #             step=64,
-    #             tooltip="Measured in pixels",
-    #         ),
-    #     ]
-    # ).send()
-
 @cl.on_message
 async def main(message):
     # Sending an action button within a chatbot message
@@ -158,27 +94,36 @@ async def main(message):
     res = await cl.AskActionMessage(
         content="Pick an action!",
         actions=[
+            cl.Action(name="continue", value="continue", label="✅ Resume the conversation"),
             cl.Action(name="send_email", value="send_email", label="📧 Email to CDA Team"),
-            cl.Action(name="cancel", value="cancel", label="❌ Exit"),
+            #cl.Action(name="cancel", value="cancel", label="❌ Exit"),
         ],
     ).send()
 
     if res and res.get("value") == "send_email":
-        # await cl.Message(
-        #     content="Continue!",
-        # ).send()
-        # try:
-        subject = "Chatbot Customer Request"
-        attach_filename = "Conversation_List"
-        df = pd.DataFrame(conversation_list)
-        # d = {'col1': [1, 2], 'col2': [3, 4]}
-        # df = pd.DataFrame(data=d)
-        send_email(subject, attach_filename, df)
-        # except Exception as e:
-        #     # Handle the SQLAlchemy error
-        #     error_message = f"An error occurred while sending email: {str(e)}"
-        #     # Log the error or perform any other necessary actions
-        #     await cl.Message(content=error_message).send()
+        # ask user to input email address
+        res1 = await cl.AskUserMessage(content="Please provide your email address to receive the feedback from CDA Team.", timeout= 600).send()
+        if res1:
+            user_email_address = res1['output']
+            await cl.Message(
+                content=f"We have recorded your email address: {user_email_address}",
+            ).send()
+            # ask user to write message to the CDA Team
+            res2 = await cl.AskUserMessage(
+                content="Please write down your message to the CDA Team.", timeout=600).send()
+            if res2:
+                user_message = res2['output']
+                # send the email
+                subject = "Chatbot Customer Request"
+                attach_filename = "Conversation_List"
+                df = pd.DataFrame(conversation_list)
+                re = send_email(subject, attach_filename, user_email_address, user_message, df)
+                if re:
+                    await cl.Message(content="The email is successfully sent to the CDA Team.").send()
+                else:
+                    await cl.Message(content="Email sending failed.").send()
+    else:
+        pass
 
 
 

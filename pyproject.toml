@@ -17,6 +17,7 @@ chainlit = "1.0.504"
 GeoAlchemy2 = "^0.14.1"
 snowflake-sqlalchemy = "1.4.7"
 gptcache = "^0.1.43"
+pandas = "^2.2.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

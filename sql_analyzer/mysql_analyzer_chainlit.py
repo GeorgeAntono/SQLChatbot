@@ -25,7 +25,8 @@ file_path = os.path.join(directory, "conversation_data.csv")
 conversation_list = csv_data.conversation_data
 callback_path = os.path.join(directory, "callback_list.csv")
 sql_path = os.path.join(directory, "sql_data.csv")
-
+#conversation_dict_saver = {}
+literal_client = LiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
 
 @cl.oauth_callback
 def oauth_callback(

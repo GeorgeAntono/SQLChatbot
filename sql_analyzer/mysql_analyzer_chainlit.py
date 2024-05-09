@@ -12,6 +12,10 @@ from sql_analyzer.config import csv_data
 from sql_analyzer.agent_factory import agent_factory
 from langchain.agents import AgentExecutor
 
+
+
+
+
 directory = "../PostNLconsultancy/csv"
 file_path = os.path.join(directory, "conversation_data.csv")
 conversation_list = csv_data.conversation_data
@@ -19,6 +23,9 @@ callback_path =  os.path.join(directory, "callback_list.csv")
 sql_path = os.path.join(directory, "sql_data.csv")
 #conversation_dict_saver = {}
 literal_client = LiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
+
+
+
 
 
 

@@ -3,7 +3,7 @@ import chainlit as cl
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine,text
 from sql_analyzer.config import cfg
-
+from literalai import LiteralClient
 
 
 import pandas as pd
@@ -15,6 +15,10 @@ from typing import Dict, Optional
 
 from sql_analyzer.agent_factory import agent_factory
 from langchain.agents import AgentExecutor
+
+
+
+
 
 directory = "../PostNLconsultancy/csv"
 file_path = os.path.join(directory, "conversation_data.csv")
@@ -42,51 +46,76 @@ def start():
 
 @cl.on_message
 async def main(message):
+    literal_client.reset_context()
     # Sending an action button within a chatbot message
+    name_of_message = message.content.strip()
+    with literal_client.thread(name=name_of_message) as thread:
 
-    agent_executor: AgentExecutor = cl.user_session.get("agent")
-    #cb = cl.AsyncLangchainCallbackHandler(stream_final_answer=True)
+        agent_executor: AgentExecutor = cl.user_session.get("agent")
 
-    # Add the post-prompt to the user's message
-    post_prompt = " Don't justify your answers. Don't give information not mentioned in the CONTEXT INFORMATION."
-    message_with_post_prompt = message.content + post_prompt
-
-
-
-    '''
-    Runs agent executor with make_async function of chainlit  and 
-    takes as input the message as a String 
-       
-    '''
+        # Add the post-prompt to the user's message
+        post_prompt = " Don't justify your answers. Don't give information not mentioned in the CONTEXT INFORMATION."
+        message_with_post_prompt = message.content + post_prompt
 
 
 
-    resp = await cl.make_async(agent_executor.run)(message_with_post_prompt)
-    final_message = cl.Message(content=resp)
-    await final_message.send()
-
-    # Save the last query in sql_query
-    sql_query = csv_data.callback_list[-1]
-
-    #Remember every different message with a counter for one session
-    counter = cl.user_session.get("counter")
-    conversation_dict_saver = cl.user_session.get("conversation_dict_saver")
-
-    counter += 1
-    # Save the button call and the results in a dictionary
-    conversation_dict_saver[counter] = sql_query
-
-    cl.user_session.set("conversation_dict_saver", conversation_dict_saver)
-    cl.user_session.set("counter", counter)
+        '''
+        Runs agent executor with make_async function of chainlit  and 
+        takes as input the message as a String 
+           
+        '''
 
 
 
+        resp = await cl.make_async(agent_executor.run)(message_with_post_prompt)
+        final_message = cl.Message(content=resp)
+        await final_message.send()
 
-    actions = [
-        cl.Action(name="Save button", value=cl.user_session.get("counter"), description="Click me to save!")
-    ]
+        # Save the last query in sql_query
+        sql_query = csv_data.callback_list[-1]
 
-    await cl.Message(content="Save your answers in a csv:", actions=actions).send()
+        #Remember every different message with a counter for one session
+        counter = cl.user_session.get("counter")
+        conversation_dict_saver = cl.user_session.get("conversation_dict_saver")
+
+        counter += 1
+        # Save the button call and the results in a dictionary
+        conversation_dict_saver[counter] = sql_query
+
+        cl.user_session.set("conversation_dict_saver", conversation_dict_saver)
+        cl.user_session.set("counter", counter)
+        # Log the response as an assistant message
+        literal_ai_log=conversation_list
+        literal_ai_log.append(sql_query)
+        narrative = []
+        for item in literal_ai_log:
+            try:
+                # Check if 'Action' key exists and handle it
+                if "Action" in item:
+                    action_title = item['Action'].replace('_', ' ').title()
+                    first_part_of_text = item.get('Text', '').split('\n')[0]
+                    narrative.append(f"**{action_title}**: {first_part_of_text}")
+
+                # Check if 'Answer' key exists and handle it
+                if "Answer" in item:
+                    answer_text = f"**Query Result**: The answer is {item['Answer']}."
+                    narrative.append(answer_text)
+
+            except Exception as e:
+                print(f"Error processing item in narrative: {str(e)}")
+
+        answer_text = f"**SQL Query**: The sql query is {sql_query}."
+        narrative.append(answer_text)
+        narrative_text = "\n- ".join(narrative)
+        literal_client.message(content=narrative_text, type="assistant_message", name="Agent Response")
+
+
+
+        actions = [
+            cl.Action(name="Save button", value=cl.user_session.get("counter"), description="Click me to save!")
+        ]
+
+        await cl.Message(content="Save your answers in a csv:", actions=actions).send()
 
 
 

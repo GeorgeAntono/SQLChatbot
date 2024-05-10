@@ -30,7 +30,7 @@ def email_to_user(user_email_address, user_name, df):
     <p>Best regards,</p>
     <p>CDA Team, PostNL</p>
     """
-    print(message)
+
     attach_filename = "data"
 
     return send_email(send_to, subject, message, df, attach_filename)

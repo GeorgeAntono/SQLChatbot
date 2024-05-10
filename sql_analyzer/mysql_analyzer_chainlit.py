@@ -89,7 +89,7 @@ async def main(message):
         cl.user_session.set("conversation_dict_saver", conversation_dict_saver)
         cl.user_session.set("counter", counter)
         # Log the response as an assistant message
-        literal_ai_log=conversation_list
+        literal_ai_log=conversation_list.copy()
         literal_ai_log.append(sql_query)
         narrative = []
         for item in literal_ai_log:

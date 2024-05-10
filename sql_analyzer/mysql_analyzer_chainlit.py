@@ -68,7 +68,12 @@ async def main(message):
 
 
         resp = await cl.make_async(agent_executor.run)(message_with_post_prompt)
-        final_message = cl.Message(content=resp)
+        # Splitting the response to remove the final answer part
+        if "Final Answer:" in resp:
+            answer_part = resp.split("Final Answer:")[0].strip()
+        else:
+            answer_part = resp
+        final_message = cl.Message(content="This is an example answer: " + answer_part)
         await final_message.send()
 
         # Save the last query in sql_query
@@ -113,7 +118,7 @@ async def main(message):
 
 
         actions = [
-            cl.Action(name="Save button", value=cl.user_session.get("counter"), description="Click me to save!")
+            cl.Action(name="Save", value=cl.user_session.get("counter"), description="Click me to save!")
         ]
 
         await cl.Message(content="Save your answers in a csv:", actions=actions).send()

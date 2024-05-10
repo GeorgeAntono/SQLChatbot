@@ -18,7 +18,7 @@ from typing import Dict, Optional
 from sql_analyzer.agent_factory import agent_factory
 from langchain.agents import AgentExecutor
 
-from sql_analyzer.email import send_email
+from sql_analyzer.email import email_to_analyst,email_to_user, validate_email
 
 directory = "../PostNLconsultancy/csv"
 file_path = os.path.join(directory, "conversation_data.csv")
@@ -94,34 +94,71 @@ async def main(message):
     res = await cl.AskActionMessage(
         content="Pick an action!",
         actions=[
-            cl.Action(name="continue", value="continue", label="✅ Resume the conversation"),
+            cl.Action(name="confirm", value="confirm", label="✅ Confirm the result"),
+            cl.Action(name="continue", value="continue", label="➡️ Resume the conversation"),
             cl.Action(name="send_email", value="send_email", label="📧 Email to CDA Team"),
             #cl.Action(name="cancel", value="cancel", label="❌ Exit"),
         ],
     ).send()
 
-    if res and res.get("value") == "send_email":
+    # When the user confirm the result, finish the conversation and email the user the result data from real DB.
+    if res and res.get("value") == "confirm":
         # ask user to input email address
-        res1 = await cl.AskUserMessage(content="Please provide your email address to receive the feedback from CDA Team.", timeout= 600).send()
-        if res1:
-            user_email_address = res1['output']
-            await cl.Message(
-                content=f"We have recorded your email address: {user_email_address}",
-            ).send()
-            # ask user to write message to the CDA Team
-            res2 = await cl.AskUserMessage(
-                content="Please write down your message to the CDA Team.", timeout=600).send()
-            if res2:
-                user_message = res2['output']
-                # send the email
-                subject = "Chatbot Customer Request"
-                attach_filename = "Conversation_List"
-                df = pd.DataFrame(conversation_list)
-                re = send_email(subject, attach_filename, user_email_address, user_message, df)
-                if re:
-                    await cl.Message(content="The email is successfully sent to the CDA Team.").send()
+        require_email_address = True
+        while require_email_address:
+            res1 = await cl.AskUserMessage(
+                content="Please provide your email address to receive the data.", timeout=600).send()
+            if res1:
+                user_email_address = res1['output']
+                if validate_email(user_email_address):
+                    await cl.Message(
+                        content=f"We have recorded your email address: {user_email_address}",
+                    ).send()
+                    require_email_address = False
                 else:
-                    await cl.Message(content="Email sending failed.").send()
+                    await cl.Message(
+                        content=f"The email address \"{user_email_address}\" is invalid.",
+                    ).send()
+                    continue
+                # ask user to write his/her name
+                res2 = await cl.AskUserMessage(
+                    content="Please provide your name.", timeout=600).send()
+                if res2:
+                    user_name = res2['output']
+                    # send the email
+                    # here's the example for test
+                    df = pd.DataFrame(conversation_list)
+                    email_to_user(user_email_address, user_name, df)
+                    await cl.Message(content="Thank you! The data will be sent to your email address.").send()
+    elif res and res.get("value") == "send_email":
+        # ask user to input email address
+        require_email_address = True
+        while require_email_address:
+            res1 = await cl.AskUserMessage(content="Please provide your email address to receive the feedback from CDA Team.", timeout= 600).send()
+            if res1:
+                user_email_address = res1['output']
+                if validate_email(user_email_address):
+                    await cl.Message(
+                        content=f"We have recorded your email address: {user_email_address}",
+                    ).send()
+                    require_email_address = False
+                else:
+                    await cl.Message(
+                        content=f"The email address \"{user_email_address}\" is invalid.",
+                    ).send()
+                    continue
+                # ask user to write message to the CDA Team
+                res2 = await cl.AskUserMessage(
+                    content="Please write down your message to the CDA Team.", timeout=600).send()
+                if res2:
+                    user_message = res2['output']
+                    # send the email
+                    df = pd.DataFrame(conversation_list)
+                    re = email_to_analyst(user_email_address, user_message, df)
+                    if re:
+                        await cl.Message(content="The email is successfully sent to the CDA Team.").send()
+                    else:
+                        await cl.Message(content="Email sending failed.").send()
     else:
         pass
 
@@ -197,5 +234,4 @@ def end():
 # @cl.on_settings_update
 # async def setup_agent(settings):
 #     print("on_settings_update", settings)
-
 

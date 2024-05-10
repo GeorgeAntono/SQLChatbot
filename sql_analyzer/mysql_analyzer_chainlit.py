@@ -51,9 +51,8 @@ async def main(message):
     # Sending an action button within a chatbot message
     name_of_message = message.content.strip()
     with literal_client.thread(name=name_of_message) as thread:
-
         agent_executor: AgentExecutor = cl.user_session.get("agent")
-
+        literal_client.message(content=message.content, type="user_message", name="User")
         # Add the post-prompt to the user's message
         post_prompt = " Don't justify your answers. Don't give information not mentioned in the CONTEXT INFORMATION."
         message_with_post_prompt = message.content + post_prompt
@@ -108,6 +107,7 @@ async def main(message):
         answer_text = f"**SQL Query**: The sql query is {sql_query}."
         narrative.append(answer_text)
         narrative_text = "\n- ".join(narrative)
+        thread.tags = ["SQL_Query"]
         literal_client.message(content=narrative_text, type="assistant_message", name="Agent Response")
 
 

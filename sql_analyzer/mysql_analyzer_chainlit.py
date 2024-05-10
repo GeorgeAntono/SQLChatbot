@@ -107,7 +107,7 @@ async def main(message):
         answer_text = f"**SQL Query**: The sql query is {sql_query}."
         narrative.append(answer_text)
         narrative_text = "\n- ".join(narrative)
-        thread.tags = ["SQL_Query"]
+        thread.tags = ["SQL_Query","To review"]
         literal_client.message(content=narrative_text, type="assistant_message", name="Agent Response")
 
 

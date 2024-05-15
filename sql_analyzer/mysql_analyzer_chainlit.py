@@ -196,7 +196,7 @@ async def main(message):
 
 
 
-@cl.action_callback("Save button")
+@cl.action_callback("Save")
 async def on_action(action: cl.Action):
     await cl.Message(content=f"Executed {action.name}").send()
     print("The user clicked on the action button!")

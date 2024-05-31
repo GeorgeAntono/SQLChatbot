@@ -1,4 +1,4 @@
-# SQL Chain Playground
+# SQL Chatbot
 
 This project is a chatbot user interface which allows users to query a specific database using natural language.
 It allows you to query in a technical, but also in a business like way.
